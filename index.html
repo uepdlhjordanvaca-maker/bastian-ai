@@ -3,11 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BASTIAN AI</title>
+    <title>SISTEMA IA: INTERFAZ AVANZADA</title>
     <style>
+        :root {
+            --cyber-cyan: #00f0ff;
+            --cyber-blue: #0066ff;
+            --glow-energy: rgba(0, 240, 255, 0.25);
+            --dark-space: #010206;
+        }
+
         body {
-            background-color: #050510;
-            color: #00e5ff;
+            background: radial-gradient(circle at center, #060d24 0%, var(--dark-space) 100%);
+            color: var(--cyber-cyan);
             font-family: 'Courier New', Courier, monospace;
             display: flex;
             flex-direction: column;
@@ -16,81 +23,332 @@
             height: 100vh;
             margin: 0;
             overflow: hidden;
+            box-sizing: border-box;
+            padding: 20px;
         }
-        /* Círculo animado estilo Jarvis */
-        .core {
-            width: 180px;
-            height: 180px;
-            border: 4px dashed #00e5ff;
-            border-radius: 50%;
-            animation: rotar 4s linear infinite;
+
+        /* =================================================================
+           CÁPSULA DEL AVATAR ROBÓTICO HOLOGRÁFICO
+        ==================================================================== */
+        .avatar-container {
+            position: relative;
+            width: 280px;
+            height: 280px;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 0 20px rgba(0, 229, 255, 0.5);
+            margin-bottom: 10px;
+            animation: levitarRobot 4s ease-in-out infinite;
         }
-        .core-inner {
-            width: 140px;
-            height: 140px;
-            border: 2px solid #0088cc;
+
+        /* Resplandor de energía de fondo */
+        .energy-pulse {
+            position: absolute;
+            width: 220px;
+            height: 220px;
+            background: radial-gradient(circle, rgba(0,240,255,0.2) 0%, transparent 70%);
             border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            animation: pulso 2s infinite ease-in-out;
+            z-index: 1;
+        }
+
+        /* Imagen del Robot con máscara circular futurista */
+        .robot-display {
+            position: relative;
+            width: 240px;
+            height: 240px;
+            border-radius: 50%;
+            border: 2px solid var(--cyber-cyan);
+            box-shadow: 0 0 25px var(--glow-energy), inset 0 0 20px var(--cyber-blue);
+            background-image: url('https://png.pngtree.com/png-clipart/20231003/original/pngtree-blue-science-fiction-grid-iron-man-ai-jarvis-png-image_112370.png');
+            background-size: cover;
+            background-position: center top;
+            cursor: pointer;
+            z-index: 5;
+            overflow: hidden;
+        }
+
+        /* Línea horizontal de escaneo láser de datos */
+        .robot-display::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(to right, transparent, var(--cyber-cyan), transparent);
+            box-shadow: 0 0 10px var(--cyber-cyan);
+            left: 0;
+            top: 0;
+            animation: laserScan 2.5s linear infinite;
+        }
+
+        /* Red de interfaz circular externa (Grid estético) */
+        .outer-hud-grid {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: 1px dashed rgba(0, 240, 255, 0.4);
+            border-radius: 50%;
+            animation: rotarGrid 20s linear infinite;
+            z-index: 2;
+        }
+
+        /* =================================================================
+           TELEMETRÍA Y MONITOR DE CONSOLA TERMINAL
+        ==================================================================== */
+        #hud-telemetry {
+            font-size: 0.75em;
+            color: var(--cyber-cyan);
+            letter-spacing: 4px;
+            margin-top: 15px;
+            text-shadow: 0 0 8px var(--glow-energy);
             font-weight: bold;
-            letter-spacing: 2px;
         }
-        @keyframes rotar {
+
+        .terminal-stream {
+            width: 85%;
+            max-width: 440px;
+            height: 100px;
+            margin-top: 15px;
+            background: rgba(2, 6, 18, 0.55);
+            border: 1px solid rgba(0, 240, 255, 0.15);
+            border-radius: 4px;
+            padding: 10px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            box-sizing: border-box;
+            backdrop-filter: blur(6px);
+            margin-bottom: 75px;
+        }
+
+        .stream-line {
+            font-size: 0.75em;
+            line-height: 1.4;
+        }
+        .stream-line.user { color: #ffffff; text-shadow: 0 0 3px rgba(255,255,255,0.4); }
+        .stream-line.jarvis { color: var(--cyber-cyan); text-shadow: 0 0 2px var(--cyber-blue); }
+
+        /* =================================================================
+           CONTROLES MINIMALISTAS DESPLEGABLES
+        ==================================================================== */
+        .dock-controls {
+            position: absolute;
+            bottom: 25px;
+            width: 90%;
+            max-width: 420px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 10px;
+            pointer-events: none;
+        }
+        .dock-controls * { pointer-events: auto; }
+
+        .slide-panel {
+            width: 100%;
+            display: flex;
+            background: rgba(1, 2, 6, 0.96);
+            border: 1px solid var(--cyber-cyan);
+            border-radius: 20px;
+            padding: 4px 6px;
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.2);
+            box-sizing: border-box;
+            transform: translateY(180%);
+            transition: transform 0.4s cubic-bezier(0.075, 0.82, 0.165, 1);
+        }
+        .slide-panel.active { transform: translateY(0); }
+
+        #cmd-field {
+            flex-grow: 1;
+            background: transparent;
+            border: none;
+            color: #ffffff;
+            padding: 8px 12px;
+            font-family: inherit;
+            outline: none;
+            font-size: 0.85em;
+        }
+
+        .action-button {
+            background: var(--cyber-cyan);
+            border: none;
+            color: #000000;
+            font-weight: bold;
+            padding: 0 18px;
+            border-radius: 14px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.75em;
+            letter-spacing: 1px;
+            box-shadow: 0 0 8px var(--cyber-cyan);
+        }
+
+        .toggle-trigger {
+            width: 44px;
+            height: 44px;
+            background: #020512;
+            border: 1px solid var(--cyber-cyan);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--cyber-cyan);
+            cursor: pointer;
+            box-shadow: 0 0 12px var(--glow-energy);
+        }
+
+        /* =================================================================
+           ANIMACIONES FLUIDAS DE CIENCIA FICCIÓN
+        ==================================================================== */
+        @keyframes laserScan {
+            0% { top: 0%; }
+            50% { top: 100%; }
+            100% { top: 0%; }
+        }
+
+        @keyframes rotarGrid {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-        #subtitulo {
-            margin-top: 20px;
-            font-size: 0.9em;
-            color: #0088cc;
+
+        @keyframes levitarRobot {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-12px); }
+            100% { transform: translateY(0px); }
+        }
+
+        @keyframes pulso {
+            0% { transform: scale(0.95); opacity: 0.4; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+            100% { transform: scale(0.95); opacity: 0.4; }
         }
     </style>
 </head>
 <body>
 
-    <div class="core" id="bastian-core">
-        <div class="core-inner">BASTIAN</div>
+    <!-- Escenario del Avatar de Red Ciber-Robótica -->
+    <div class="avatar-container">
+        <div class="energy-pulse"></div>
+        <div class="outer-hud-grid"></div>
+        <!-- El nodo del robot utiliza la imagen exacta solicitada -->
+        <div class="robot-display" id="robot-node" onclick="capturarVoz()"></div>
     </div>
-    <div id="subtitulo">TOCA LA PANTALLA PARA INICIAR...</div>
+
+    <!-- Indicador HUD de Telemetría Externa -->
+    <div id="hud-telemetry">AVATAR_LINK: ONLINE</div>
+
+    <!-- Consola de salida de procesamiento terminal -->
+    <div class="terminal-stream" id="logs-view"></div>
+
+    <!-- Muelle Flotante Inferior de Entrada -->
+    <div class="dock-controls">
+        <div class="slide-panel" id="input-container">
+            <input type="text" id="cmd-field" placeholder="Transmitir directiva al núcleo..." onkeypress="detectarIntro(event)">
+            <button class="action-button" onclick="ejecutarComando()">EXEC</button>
+        </div>
+        <div class="toggle-trigger" onclick="conmutarConsola()">⌨</div>
+    </div>
 
     <script>
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        
-        if (SpeechRecognition) {
-            const recognition = new SpeechRecognition();
-            recognition.lang = 'es-EC';
-            
-            document.body.addEventListener('click', () => {
-                document.getElementById('subtitulo').innerText = "ESCUCHANDO...";
-                recognition.start();
-            });
+        let reconocimiento;
 
-            recognition.onresult = (event) => {
-                const voz = event.results[0][0].transcript.toLowerCase();
-                document.getElementById('subtitulo').innerText = `DIJISTE: "${voz}"`;
-                responder(voz);
+        if (SpeechRecognition) {
+            reconocimiento = new SpeechRecognition();
+            reconocimiento.lang = 'es-EC';
+
+            reconocimiento.onresult = (e) => {
+                const dictado = e.results[0][0].transcript;
+                imprimirPantalla(dictado, 'user');
+                analizarFiltros(dictado);
             };
-        } else {
-            document.getElementById('subtitulo').innerText = "TU NAVEGADOR NO SOPORTA VOZ.";
+
+            reconocimiento.onend = () => {
+                document.getElementById('hud-telemetry').innerText = "AVATAR_LINK: ONLINE";
+            };
         }
 
-        function responder(mensaje) {
-            const synth = window.speechSynthesis;
-            let respuesta = new SpeechSynthesisUtterance();
-            
-            if (mensaje.includes('bastian')) {
-                respuesta.text = "Sistemas en línea. Estoy listo en su dispositivo móvil, señor.";
-            } else {
-                respuesta.text = "Comando recibido, pero necesito conexión al servidor central.";
+        function capturarVoz() {
+            if (reconocimiento) {
+                document.getElementById('hud-telemetry').innerText = "TRANSMITTING_AUDIO...";
+                reconocimiento.start();
             }
-            
-            respuesta.lang = 'es-ES';
-            synth.speak(respuesta);
+        }
+
+        function conmutarConsola() {
+            const wrapper = document.getElementById('input-container');
+            wrapper.classList.toggle('active');
+            if (wrapper.classList.contains('active')) {
+                document.getElementById('cmd-field').focus();
+            }
+        }
+
+        function detectarIntro(e) {
+            if (e.key === 'Enter') ejecutarComando();
+        }
+
+        function ejecutarComando() {
+            const caja = document.getElementById('cmd-field');
+            const valor = caja.value.trim();
+            if (valor !== "") {
+                imprimirPantalla(valor, 'user');
+                caja.value = "";
+                conmutarConsola();
+                analizarFiltros(valor);
+            }
+        }
+
+        function imprimirPantalla(txt, procedencia) {
+            const vista = document.getElementById('logs-view');
+            const parrafo = document.createElement('div');
+            parrafo.classList.add('stream-line', procedencia);
+            parrafo.innerText = (procedencia === 'user' ? ">> " : "CORE_SYS: ") + txt;
+            vista.appendChild(parrafo);
+            vista.scrollTop = vista.scrollHeight;
+        }
+
+        function analizarFiltros(entrada) {
+            const normalizado = entrada.toLowerCase();
+            let respuesta = "Directiva registrada en sub-sistema.";
+
+            if (normalizado.includes('pdf')) {
+                respuesta = "Procesando matriz de datos. Descargando reporte en formato PDF.";
+                descargaInstantanea("Reporte_Core.pdf", "%PDF-1.4...", "application/pdf");
+            } else if (normalizado.includes('documento') || normalizado.includes('word')) {
+                respuesta = "Compilando especificaciones de terminal en documento Word (.doc).";
+                descargaInstantanea("Especificaciones_Core.doc", "Reporte de datos...", "application/msword");
+            } else if (normalizado.includes('excel') || normalizado.includes('hoja')) {
+                respuesta = "Estructurando telemetría de red en matriz de celdas Excel (.xls).";
+                descargaInstantanea("Matriz_Frecuencias.xls", "ID\tMétrica...", "application/vnd.ms-excel");
+            } else if (normalizado.includes('powerpoint') || normalizado.includes('presentación') || normalizado.includes('power point')) {
+                respuesta = "Compilando láminas de datos visuales en diapositivas PowerPoint (.ppt).";
+                descargaInstantanea("Presentacion_Core.ppt", "Slides de datos...", "application/vnd.ms-powerpoint");
+            } else if (normalizado.includes('texto') || normalizado.includes('transcribe')) {
+                respuesta = "Volcando transcripción limpia de comandos en archivo de texto (.txt).";
+                descargaInstantanea("Transcripcion_Sistema.txt", entrada, "text/plain");
+            }
+
+            imprimirPantalla(respuesta, 'jarvis');
+
+            const vocalizador = window.speechSynthesis;
+            if (vocalizador) {
+                let rachaVoz = new SpeechSynthesisUtterance(respuesta);
+                rachaVoz.lang = 'es-ES';
+                vocalizador.speak(rachaVoz);
+            }
+        }
+
+        function descargaInstantanea(nombre, crudo, tipo) {
+            setTimeout(() => {
+                const fileBlob = new Blob([crudo], { type: tipo });
+                const linkElement = document.createElement("a");
+                linkElement.href = URL.createObjectURL(fileBlob);
+                linkElement.download = nombre;
+                document.body.appendChild(linkElement);
+                linkElement.click();
+                document.body.removeChild(linkElement);
+            }, 800);
         }
     </script>
 </body>
