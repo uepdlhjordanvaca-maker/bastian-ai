@@ -236,20 +236,9 @@
 
     <script>
         // =================================================================
-        // SISTEMA DE SEGURIDAD INTERNO (LocalStorage)
+        // CONFIGURACIÓN SEGURA (VACÍA POR PROTECCIÓN CONTRA ESCANEO)
         // =================================================================
-        let API_KEY = localStorage.getItem("BASTIAN_GEMINI_KEY");
-
-        // Si no existe una clave guardada en el celular, la solicita al iniciar
-        if (!API_KEY) {
-            API_KEY = prompt("NÚCLEO INCOMPLETO: Ingrese su API Key de Google Gemini para enlazar a BASTIAN:");
-            if (API_KEY && API_KEY.trim() !== "") {
-                localStorage.setItem("BASTIAN_GEMINI_KEY", API_KEY.trim());
-                alert("CONEXIÓN EXITOSA: Clave sincronizada localmente en este dispositivo.");
-            } else {
-                alert("ADVERTENCIA: Sin clave API, BASTIAN no podrá procesar datos de inteligencia artificial.");
-            }
-        }
+        let API_KEY = ""; 
 
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         let reconocimiento;
@@ -268,9 +257,15 @@
         }
 
         function capturarVoz() {
-            if (!API_KEY) { 
-                reconfigurarClave();
-                return; 
+            // Si el usuario toca el círculo y no hay clave en memoria, le permite configurarla
+            if (!localStorage.getItem("BASTIAN_GEMINI_KEY")) {
+                let claveManual = prompt("CONFIGURACIÓN: Ingrese su nueva API Key de Gemini:");
+                if (claveManual) {
+                    localStorage.setItem("BASTIAN_GEMINI_KEY", claveManual);
+                    API_KEY = claveManual;
+                    imprimirPantalla("Clave guardada localmente de forma segura.", "bastian");
+                }
+                return;
             }
             if (reconocimiento) {
                 document.getElementById('hud-telemetry').innerText = "TRANSMITTING_AUDIO...";
@@ -310,27 +305,27 @@
             vista.scrollTop = vista.scrollHeight;
         }
 
-        function reconfigurarClave() {
-            let nuevaClave = prompt("Modificar o ingresar API Key de Gemini:");
-            if (nuevaClave && nuevaClave.trim() !== "") {
-                localStorage.setItem("BASTIAN_GEMINI_KEY", nuevaClave.trim());
-                API_KEY = nuevaClave.trim();
-                alert("Clave actualizada.");
-            }
-        }
-
         // =================================================================
-        // CONEXIÓN EN TIEMPO REAL CON LA API DE GEMINI
+        // CONEXIÓN SEGURA EN TIEMPO REAL CON LA API DE GEMINI
         // =================================================================
         async function consultarMenteIA(mensajeUsuario) {
-            if (!API_KEY) {
-                imprimirPantalla("ERROR CRÍTICO: Ingrese una clave API válida tocando el núcleo.", "bastian");
-                return;
+            // Recupera de forma oculta la clave guardada en el celular del usuario
+            if (!API_KEY || API_KEY.trim() === "") {
+                API_KEY = localStorage.getItem("BASTIAN_GEMINI_KEY");
+                
+                if (!API_KEY) {
+                    API_KEY = prompt("NÚCLEO SEGURO: Ingrese su nueva API Key de Gemini:");
+                    if (API_KEY) {
+                        localStorage.setItem("BASTIAN_GEMINI_KEY", API_KEY);
+                    } else {
+                        imprimirPantalla("ERROR CRÍTICO: Enlace denegado por falta de clave.", "bastian");
+                        return;
+                    }
+                }
             }
 
             document.getElementById('hud-telemetry').innerText = "CORE_PROCESSING...";
 
-            // Personalización e instrucciones fijas para el comportamiento de tu IA
             const directivaPersonalidad = "Eres BASTIAN, un asistente de inteligencia artificial avanzado con un estilo ciberpunk táctico e ingenioso. Tus respuestas deben ser claras, sumamente concisas, directas y con mucha personalidad tecnológica.";
 
             try {
@@ -352,7 +347,9 @@
                 if (respuestaJson.candidates && respuestaJson.candidates[0].content.parts[0].text) {
                     textoFinal = respuestaJson.candidates[0].content.parts[0].text;
                 } else if (respuestaJson.error) {
-                    textoFinal = "Fallo de autenticación: Verifica que tu clave API sea correcta.";
+                    textoFinal = "Fallo de autenticación: La clave local es inválida o fue revocada. Memoria reseteada; intente enviar otro mensaje para ingresar una clave nueva.";
+                    localStorage.removeItem("BASTIAN_GEMINI_KEY"); // Borra la clave vieja que no sirvió
+                    API_KEY = "";
                 }
 
                 imprimirPantalla(textoFinal, "bastian");
