@@ -121,6 +121,7 @@
         .stream-line {
             font-size: 0.75em;
             line-height: 1.4;
+            word-wrap: break-word;
         }
         .stream-line.user { color: #ffffff; text-shadow: 0 0 3px rgba(255,255,255,0.4); }
         .stream-line.bastian { color: var(--cyber-cyan); text-shadow: 0 0 2px var(--cyber-blue); }
@@ -238,7 +239,16 @@
         // =================================================================
         // CONFIGURACIÓN DE CONEXIÓN HUGGING FACE (ANTI-BLOQUEOS)
         // =================================================================
-        let API_KEY = ""; 
+        let API_KEY = localStorage.getItem("BASTIAN_HF_KEY") || ""; 
+
+        // Mostrar estado inicial si ya hay token guardado
+        window.addEventListener('DOMContentLoaded', () => {
+            if (API_KEY) {
+                imprimirPantalla("Token de seguridad enlazado correctamente.", "bastian");
+            } else {
+                imprimirPantalla("SISTEMA: Requiere Token de Acceso para iniciar enlace.", "bastian");
+            }
+        });
 
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         let reconocimiento;
@@ -288,9 +298,13 @@
             const caja = document.getElementById('cmd-field');
             const valor = caja.value.trim();
             if (valor !== "") {
-                imprimirPantarma(valor, 'user');
+                imprimirPantalla(valor, 'user'); // <-- CORREGIDO: Sin errores tipográficos
                 caja.value = "";
-                conmutarConsola();
+                
+                // Ocultar panel en móviles tras enviar
+                const wrapper = document.getElementById('input-container');
+                wrapper.classList.remove('active');
+                
                 consultarMenteIA(valor);
             }
         }
@@ -305,7 +319,7 @@
         }
 
         // =================================================================
-        // CONEXIÓN DIRECTA CON EL LLAMA-3 POR COMPATIBILIDAD INTEGRADA
+        // CONEXIÓN DIRECTA CON EL MODELO INTEGRADO EN HUGGING FACE
         // =================================================================
         async function consultarMenteIA(mensajeUsuario) {
             if (!API_KEY || API_KEY.trim() === "") {
@@ -315,6 +329,7 @@
                     API_KEY = prompt("NÚCLEO SEGURO: Ingrese su Token de Hugging Face (hf_...):");
                     if (API_KEY) {
                         localStorage.setItem("BASTIAN_HF_KEY", API_KEY.trim());
+                        imprimirPantalla("Token de seguridad enlazado correctamente.", "bastian");
                     } else {
                         imprimirPantalla("ERROR CRÍTICO: Falta token de acceso. Enlace abortado.", "bastian");
                         return;
@@ -327,7 +342,7 @@
             const directivaPersonalidad = "Eres BASTIAN, un asistente de inteligencia artificial avanzado con un estilo ciberpunk táctico e ingenioso. Tus respuestas deben ser en español, claras, sumamente concisas, directas y con mucha personalidad tecnológica.";
 
             try {
-                // Usamos la API de Inferencia gratuita para el modelo ultra rápido Qwen 2.5 72B Instruct
+                // Endpoint estable usando la arquitectura Qwen 2.5 de alta disponibilidad
                 const urlApi = "https://api-inference.huggingface.co/models/Qwen/Qwen2.5-72B-Instruct/v1/chat/completions";
                 
                 const peticion = await fetch(urlApi, {
@@ -353,7 +368,7 @@
                 if (respuestaJson.choices && respuestaJson.choices[0].message.content) {
                     textoFinal = respuestaJson.choices[0].message.content;
                 } else if (respuestaJson.error) {
-                    textoFinal = "Fallo del Sistema: Token inválido o el servidor está saturado. Reajustando memoria...";
+                    textoFinal = "Fallo del Sistema: Token inválido o servidor en mantenimiento. Reajustando memoria...";
                     localStorage.removeItem("BASTIAN_HF_KEY");
                     API_KEY = "";
                 }
@@ -363,7 +378,7 @@
 
             } catch (error) {
                 console.error(error);
-                imprimirPantalla("ERROR: Interrupción de enlace. Servidores en mantenimiento.", "bastian");
+                imprimirPantalla("ERROR: Interrupción de enlace. Servidores saturados.", "bastian");
             } finally {
                 document.getElementById('hud-telemetry').innerText = "AVATAR_LINK: ONLINE";
             }
