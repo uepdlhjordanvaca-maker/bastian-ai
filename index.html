@@ -27,9 +27,6 @@
             padding: 20px;
         }
 
-        /* =================================================================
-           CÁPSULA DEL AVATAR ROBÓTICO HOLOGRÁFICO
-        ==================================================================== */
         .avatar-container {
             position: relative;
             width: 250px;
@@ -58,12 +55,10 @@
             border-radius: 50%;
             border: 2px solid var(--cyber-cyan);
             box-shadow: 0 0 25px var(--glow-energy), inset 0 0 20px var(--cyber-blue);
-            background-image: url('robot.svg');
-            background-size: cover;
-            background-position: center center;
             cursor: pointer;
             z-index: 5;
             overflow: hidden;
+            background: rgba(2, 6, 18, 0.3);
         }
 
         .robot-display::after {
@@ -88,9 +83,6 @@
             z-index: 2;
         }
 
-        /* =================================================================
-           TELEMETRÍA Y MONITOR DE CONSOLA TERMINAL
-        ==================================================================== */
         #hud-telemetry {
             font-size: 0.75em;
             color: var(--cyber-cyan);
@@ -105,8 +97,8 @@
             max-width: 440px;
             height: 130px;
             margin-top: 10px;
-            background: rgba(2, 6, 18, 0.65);
-            border: 1px solid rgba(0, 240, 255, 0.15);
+            background: rgba(2, 6, 18, 0.85);
+            border: 1px solid rgba(0, 240, 255, 0.2);
             border-radius: 4px;
             padding: 10px;
             overflow-y: auto;
@@ -126,9 +118,6 @@
         .stream-line.user { color: #ffffff; text-shadow: 0 0 3px rgba(255,255,255,0.4); }
         .stream-line.bastian { color: var(--cyber-cyan); text-shadow: 0 0 2px var(--cyber-blue); }
 
-        /* =================================================================
-           CONTROLES MINIMALISTAS DESPLEGABLES
-        ==================================================================== */
         .dock-controls {
             position: absolute;
             bottom: 20px;
@@ -236,49 +225,22 @@
     </div>
 
     <script>
-        // =================================================================
-        // CONFIGURACIÓN DE CONEXIÓN HUGGING FACE (MODELO LIGERO Y RÁPIDO)
-        // =================================================================
         let API_KEY = localStorage.getItem("BASTIAN_HF_KEY") || ""; 
 
-        // Notificar estado de conexión al cargar la página
         window.addEventListener('DOMContentLoaded', () => {
             if (API_KEY) {
-                imprimirPantalla("Token de seguridad enlazado correctamente.", "bastian");
+                imprimirPantalla("Memoria de credenciales vinculada.", "bastian");
             } else {
-                imprimirPantalla("SISTEMA: Requiere Token de Acceso. Presione el holograma central para ingresar su clave.", "bastian");
+                imprimirPantalla("SISTEMA: Toque el holograma central para vincular su clave de acceso.", "bastian");
             }
         });
 
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        let reconocimiento;
-
-        if (SpeechRecognition) {
-            reconocimiento = new SpeechRecognition();
-            reconocimiento.lang = 'es-EC';
-            reconocimiento.onresult = (e) => {
-                const dictado = e.results[0][0].transcript;
-                imprimirPantalla(dictado, 'user');
-                consultarMenteIA(dictado);
-            };
-            reconocimiento.onend = () => {
-                document.getElementById('hud-telemetry').innerText = "AVATAR_LINK: ONLINE";
-            };
-        }
-
         function forzarSolicitudToken() {
-            let claveManual = prompt("CONFIGURACIÓN NÚCLEO: Ingrese su Token de Hugging Face (hf_...):");
+            let claveManual = prompt("NÚCLEO DE SEGURIDAD: Ingrese su clave de Hugging Face (hf_...):");
             if (claveManual && claveManual.trim() !== "") {
                 localStorage.setItem("BASTIAN_HF_KEY", claveManual.trim());
                 API_KEY = claveManual.trim();
-                imprimirPantalla("Token actualizado y enlazado correctamente.", "bastian");
-            }
-        }
-
-        function capturarVoz() {
-            if (reconocimiento) {
-                document.getElementById('hud-telemetry').innerText = "TRANSMITTING_AUDIO...";
-                reconocimiento.start();
+                imprimirPantalla("Credenciales guardadas localmente en el dispositivo.", "bastian");
             }
         }
 
@@ -300,10 +262,6 @@
             if (valor !== "") {
                 imprimirPantalla(valor, 'user');
                 caja.value = "";
-                
-                const wrapper = document.getElementById('input-container');
-                wrapper.classList.remove('active');
-                
                 consultarMenteIA(valor);
             }
         }
@@ -317,68 +275,48 @@
             vista.scrollTop = vista.scrollHeight;
         }
 
-        // =================================================================
-        // CONEXIÓN OPTIMIZADA CON META-LLAMA-3-8B (ALTA DISPONIBILIDAD)
-        // =================================================================
         async function consultarMenteIA(mensajeUsuario) {
+            API_KEY = localStorage.getItem("BASTIAN_HF_KEY");
+
             if (!API_KEY || API_KEY.trim() === "") {
-                API_KEY = localStorage.getItem("BASTIAN_HF_KEY");
-                
-                if (!API_KEY) {
-                    API_KEY = prompt("NÚCLEO SEGURO: Ingrese su Token de Hugging Face (hf_...):");
-                    if (API_KEY && API_KEY.trim() !== "") {
-                        localStorage.setItem("BASTIAN_HF_KEY", API_KEY.trim());
-                        API_KEY = API_KEY.trim();
-                        imprimirPantalla("Token de seguridad enlazado correctamente.", "bastian");
-                    } else {
-                        imprimirPantalla("ERROR CRÍTICO: Falta token de acceso. Enlace abortado.", "bastian");
-                        return;
-                    }
-                }
+                imprimirPantalla("ERROR: No hay credenciales activas. Toque el holograma para ingresar su clave.", "bastian");
+                return;
             }
 
             document.getElementById('hud-telemetry').innerText = "CORE_PROCESSING...";
 
-            const directivaPersonalidad = "Eres BASTIAN, un asistente de inteligencia artificial avanzado con un estilo ciberpunk táctico e ingenioso. Tus respuestas deben ser en español, claras, sumamente concisas, directas y con mucha personalidad tecnológica.";
-
             try {
-                // Cambiado a Meta-Llama-3-8B-Instruct por estabilidad y rapidez en peticiones gratuitas
-                const urlApi = "https://api-inference.huggingface.co/models/meta-llama/Meta-Llama-3-8B-Instruct/v1/chat/completions";
-                
-                const peticion = await fetch(urlApi, {
+                // Endpoint directo estructurado para evitar bloqueos CSP del navegador público
+                const res = await fetch("https://api-inference.huggingface.co/models/meta-llama/Meta-Llama-3-8B-Instruct", {
                     method: "POST",
                     headers: { 
                         "Content-Type": "application/json",
-                        "Authorization": `Bearer ${API_KEY.trim()}`
+                        "Authorization": "Bearer " + API_KEY.replace(/\s/g, '')
                     },
                     body: JSON.stringify({
-                        model: "meta-llama/Meta-Llama-3-8B-Instruct",
-                        messages: [
-                            { role: "system", content: directivaPersonalidad },
-                            { role: "user", content: mensajeUsuario }
-                        ],
-                        max_tokens: 250,
-                        temperature: 0.7
+                        inputs: `<|system|>\nEres BASTIAN, una inteligencia artificial avanzada con estilo ciberpunk táctico e ingenioso. Responde en español, muy corto, directo y conciso.\n<|user|>\n${mensajeUsuario}\n<|assistant|>\n`,
+                        parameters: { max_new_tokens: 150, temperature: 0.7 }
                     })
                 });
 
-                const respuestaJson = await peticion.json();
-                let textoFinal = "Error de sincronización en la matriz de Hugging Face.";
+                const data = await res.json();
+                let textoFinal = "";
 
-                if (respuestaJson.choices && respuestaJson.choices[0].message.content) {
-                    textoFinal = respuestaJson.choices[0].message.content;
-                } else if (respuestaJson.error) {
-                    textoFinal = "Fallo del Sistema: Token inválido o rechazo de credenciales. Toque el holograma central para reintroducir su clave limpiamente.";
-                    localStorage.removeItem("BASTIAN_HF_KEY");
-                    API_KEY = "";
+                if (Array.isArray(data) && data[0].generated_text) {
+                    const completo = data[0].generated_text;
+                    textoFinal = completo.split("<|assistant|>\n")[1] || completo;
+                } else if (data.error) {
+                    textoFinal = "Fallo de validación: La clave es incorrecta o los servidores están ocupados. Toque el holograma para reintroducirla.";
+                } else {
+                    textoFinal = "Conexión establecida, pero la matriz devolvió un formato desconocido.";
                 }
 
-                imprimirPantalla(textoFinal, "bastian");
-                vocalizarRespuesta(textoFinal);
+                imprimirPantalla(textoFinal.trim(), "bastian");
+                vocalizarRespuesta(textoFinal.trim());
 
             } catch (error) {
                 console.error(error);
-                imprimirPantalla("ERROR: Interrupción de enlace. Intente enviar el mensaje nuevamente.", "bastian");
+                imprimirPantalla("Error de red local. Verifique que copió la clave completa sin espacios.", "bastian");
             } finally {
                 document.getElementById('hud-telemetry').innerText = "AVATAR_LINK: ONLINE";
             }
