@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SISTEMA IA: INTERFAZ AVANZADA</title>
+    <title>BASTIAN CORE: ONLINE</title>
     <style>
         :root {
             --cyber-cyan: #00f0ff;
@@ -32,8 +32,8 @@
         ==================================================================== */
         .avatar-container {
             position: relative;
-            width: 260px;
-            height: 260px;
+            width: 250px;
+            height: 250px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -41,26 +41,23 @@
             animation: levitarRobot 4s ease-in-out infinite;
         }
 
-        /* Resplandor de energía de fondo */
         .energy-pulse {
             position: absolute;
-            width: 200px;
-            height: 200px;
+            width: 190px;
+            height: 190px;
             background: radial-gradient(circle, rgba(0,240,255,0.2) 0%, transparent 70%);
             border-radius: 50%;
             animation: pulso 2s infinite ease-in-out;
             z-index: 1;
         }
 
-        /* Imagen enlazada localmente desde tu repositorio */
         .robot-display {
             position: relative;
-            width: 220px;
-            height: 220px;
+            width: 210px;
+            height: 210px;
             border-radius: 50%;
             border: 2px solid var(--cyber-cyan);
             box-shadow: 0 0 25px var(--glow-energy), inset 0 0 20px var(--cyber-blue);
-            /* AQUÍ ESTÁ EL ENLACE LOCAL A TU REPOSITORIO */
             background-image: url('robot.svg');
             background-size: cover;
             background-position: center center;
@@ -69,7 +66,6 @@
             overflow: hidden;
         }
 
-        /* Línea horizontal de escaneo láser de datos */
         .robot-display::after {
             content: '';
             position: absolute;
@@ -82,7 +78,6 @@
             animation: laserScan 2.5s linear infinite;
         }
 
-        /* Red de interfaz circular externa (Grid estético) */
         .outer-hud-grid {
             position: absolute;
             width: 100%;
@@ -100,7 +95,7 @@
             font-size: 0.75em;
             color: var(--cyber-cyan);
             letter-spacing: 4px;
-            margin-top: 15px;
+            margin-top: 10px;
             text-shadow: 0 0 8px var(--glow-energy);
             font-weight: bold;
         }
@@ -108,9 +103,9 @@
         .terminal-stream {
             width: 85%;
             max-width: 440px;
-            height: 110px;
-            margin-top: 15px;
-            background: rgba(2, 6, 18, 0.55);
+            height: 130px;
+            margin-top: 10px;
+            background: rgba(2, 6, 18, 0.65);
             border: 1px solid rgba(0, 240, 255, 0.15);
             border-radius: 4px;
             padding: 10px;
@@ -120,7 +115,7 @@
             gap: 6px;
             box-sizing: border-box;
             backdrop-filter: blur(6px);
-            margin-bottom: 70px;
+            margin-bottom: 65px;
         }
 
         .stream-line {
@@ -128,14 +123,14 @@
             line-height: 1.4;
         }
         .stream-line.user { color: #ffffff; text-shadow: 0 0 3px rgba(255,255,255,0.4); }
-        .stream-line.jarvis { color: var(--cyber-cyan); text-shadow: 0 0 2px var(--cyber-blue); }
+        .stream-line.bastian { color: var(--cyber-cyan); text-shadow: 0 0 2px var(--cyber-blue); }
 
         /* =================================================================
            CONTROLES MINIMALISTAS DESPLEGABLES
         ==================================================================== */
         .dock-controls {
             position: absolute;
-            bottom: 25px;
+            bottom: 20px;
             width: 90%;
             max-width: 420px;
             display: flex;
@@ -199,26 +194,20 @@
             box-shadow: 0 0 12px var(--glow-energy);
         }
 
-        /* =================================================================
-           ANIMACIONES FLUIDAS DE CIENCIA FICCIÓN
-        ==================================================================== */
         @keyframes laserScan {
             0% { top: 0%; }
             50% { top: 100%; }
             100% { top: 0%; }
         }
-
         @keyframes rotarGrid {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-
         @keyframes levitarRobot {
             0% { transform: translateY(0px); }
-            50% { transform: translateY(-12px); }
+            50% { transform: translateY(-10px); }
             100% { transform: translateY(0px); }
         }
-
         @keyframes pulso {
             0% { transform: scale(0.95); opacity: 0.4; }
             50% { transform: scale(1.1); opacity: 0.8; }
@@ -228,20 +217,15 @@
 </head>
 <body>
 
-    <!-- Escenario del Avatar de Red Ciber-Robótica -->
     <div class="avatar-container">
         <div class="energy-pulse"></div>
         <div class="outer-hud-grid"></div>
         <div class="robot-display" id="robot-node" onclick="capturarVoz()"></div>
     </div>
 
-    <!-- Indicador HUD de Telemetría Externa -->
     <div id="hud-telemetry">AVATAR_LINK: ONLINE</div>
-
-    <!-- Consola de salida de procesamiento terminal -->
     <div class="terminal-stream" id="logs-view"></div>
 
-    <!-- Muelle Flotante Inferior de Entrada -->
     <div class="dock-controls">
         <div class="slide-panel" id="input-container">
             <input type="text" id="cmd-field" placeholder="Transmitir directiva al núcleo..." onkeypress="detectarIntro(event)">
@@ -251,25 +235,43 @@
     </div>
 
     <script>
+        // =================================================================
+        // SISTEMA DE SEGURIDAD INTERNO (LocalStorage)
+        // =================================================================
+        let API_KEY = localStorage.getItem("BASTIAN_GEMINI_KEY");
+
+        // Si no existe una clave guardada en el celular, la solicita al iniciar
+        if (!API_KEY) {
+            API_KEY = prompt("NÚCLEO INCOMPLETO: Ingrese su API Key de Google Gemini para enlazar a BASTIAN:");
+            if (API_KEY && API_KEY.trim() !== "") {
+                localStorage.setItem("BASTIAN_GEMINI_KEY", API_KEY.trim());
+                alert("CONEXIÓN EXITOSA: Clave sincronizada localmente en este dispositivo.");
+            } else {
+                alert("ADVERTENCIA: Sin clave API, BASTIAN no podrá procesar datos de inteligencia artificial.");
+            }
+        }
+
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         let reconocimiento;
 
         if (SpeechRecognition) {
             reconocimiento = new SpeechRecognition();
             reconocimiento.lang = 'es-EC';
-
             reconocimiento.onresult = (e) => {
                 const dictado = e.results[0][0].transcript;
                 imprimirPantalla(dictado, 'user');
-                analizarFiltros(dictado);
+                consultarMenteIA(dictado);
             };
-
             reconocimiento.onend = () => {
                 document.getElementById('hud-telemetry').innerText = "AVATAR_LINK: ONLINE";
             };
         }
 
         function capturarVoz() {
+            if (!API_KEY) { 
+                reconfigurarClave();
+                return; 
+            }
             if (reconocimiento) {
                 document.getElementById('hud-telemetry').innerText = "TRANSMITTING_AUDIO...";
                 reconocimiento.start();
@@ -295,7 +297,7 @@
                 imprimirPantalla(valor, 'user');
                 caja.value = "";
                 conmutarConsola();
-                analizarFiltros(valor);
+                consultarMenteIA(valor);
             }
         }
 
@@ -303,52 +305,75 @@
             const vista = document.getElementById('logs-view');
             const parrafo = document.createElement('div');
             parrafo.classList.add('stream-line', procedencia);
-            parrafo.innerText = (procedencia === 'user' ? ">> " : "CORE_SYS: ") + txt;
+            parrafo.innerText = (procedencia === 'user' ? ">> " : "BASTIAN: ") + txt;
             vista.appendChild(parrafo);
             vista.scrollTop = vista.scrollHeight;
         }
 
-        function analizarFiltros(entrada) {
-            const normalizado = entrada.toLowerCase();
-            let respuesta = "Directiva registrada en sub-sistema.";
-
-            if (normalizado.includes('pdf')) {
-                respuesta = "Procesando matriz de datos. Descargando reporte en formato PDF.";
-                descargaInstantanea("Reporte_Core.pdf", "%PDF-1.4...", "application/pdf");
-            } else if (normalizado.includes('documento') || normalizado.includes('word')) {
-                respuesta = "Compilando especificaciones de terminal en documento Word (.doc).";
-                descargaInstantanea("Especificaciones_Core.doc", "Reporte de datos...", "application/msword");
-            } else if (normalizado.includes('excel') || normalizado.includes('hoja')) {
-                respuesta = "Estructurando telemetría de red en matriz de celdas Excel (.xls).";
-                descargaInstantanea("Matriz_Frecuencias.xls", "ID\tMétrica...", "application/vnd.ms-excel");
-            } else if (normalizado.includes('powerpoint') || normalizado.includes('presentación') || normalizado.includes('power point')) {
-                respuesta = "Compilando láminas de datos visuales en diapositivas PowerPoint (.ppt).";
-                descargaInstantanea("Presentacion_Core.ppt", "Slides de datos...", "application/vnd.ms-powerpoint");
-            } else if (normalizado.includes('texto') || normalizado.includes('transcribe')) {
-                respuesta = "Volcando transcripción limpia de comandos en archivo de texto (.txt).";
-                descargaInstantanea("Transcripcion_Sistema.txt", entrada, "text/plain");
-            }
-
-            imprimirPantalla(respuesta, 'jarvis');
-
-            const vocalizador = window.speechSynthesis;
-            if (vocalizador) {
-                let rachaVoz = new SpeechSynthesisUtterance(respuesta);
-                rachaVoz.lang = 'es-ES';
-                vocalizador.speak(rachaVoz);
+        function reconfigurarClave() {
+            let nuevaClave = prompt("Modificar o ingresar API Key de Gemini:");
+            if (nuevaClave && nuevaClave.trim() !== "") {
+                localStorage.setItem("BASTIAN_GEMINI_KEY", nuevaClave.trim());
+                API_KEY = nuevaClave.trim();
+                alert("Clave actualizada.");
             }
         }
 
-        function descargaInstantanea(nombre, crudo, tipo) {
-            setTimeout(() => {
-                const fileBlob = new Blob([crudo], { type: tipo });
-                const linkElement = document.createElement("a");
-                linkElement.href = URL.createObjectURL(fileBlob);
-                linkElement.download = nombre;
-                document.body.appendChild(linkElement);
-                linkElement.click();
-                document.body.removeChild(linkElement);
-            }, 800);
+        // =================================================================
+        // CONEXIÓN EN TIEMPO REAL CON LA API DE GEMINI
+        // =================================================================
+        async function consultarMenteIA(mensajeUsuario) {
+            if (!API_KEY) {
+                imprimirPantalla("ERROR CRÍTICO: Ingrese una clave API válida tocando el núcleo.", "bastian");
+                return;
+            }
+
+            document.getElementById('hud-telemetry').innerText = "CORE_PROCESSING...";
+
+            // Personalización e instrucciones fijas para el comportamiento de tu IA
+            const directivaPersonalidad = "Eres BASTIAN, un asistente de inteligencia artificial avanzado con un estilo ciberpunk táctico e ingenioso. Tus respuestas deben ser claras, sumamente concisas, directas y con mucha personalidad tecnológica.";
+
+            try {
+                const urlApi = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
+                
+                const peticion = await fetch(urlApi, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [{ text: `${directivaPersonalidad}\nUsuario: ${mensajeUsuario}` }]
+                        }]
+                    })
+                });
+
+                const respuestaJson = await peticion.json();
+                let textoFinal = "Error de sincronización con la red neuronal.";
+
+                if (respuestaJson.candidates && respuestaJson.candidates[0].content.parts[0].text) {
+                    textoFinal = respuestaJson.candidates[0].content.parts[0].text;
+                } else if (respuestaJson.error) {
+                    textoFinal = "Fallo de autenticación: Verifica que tu clave API sea correcta.";
+                }
+
+                imprimirPantalla(textoFinal, "bastian");
+                vocalizarRespuesta(textoFinal);
+
+            } catch (error) {
+                console.error(error);
+                imprimirPantalla("ERROR: Interrupción en la frecuencia de enlace de datos.", "bastian");
+            } finally {
+                document.getElementById('hud-telemetry').innerText = "AVATAR_LINK: ONLINE";
+            }
+        }
+
+        function vocalizarRespuesta(texto) {
+            const vocalizador = window.speechSynthesis;
+            if (vocalizador) {
+                vocalizador.cancel(); 
+                let rachaVoz = new SpeechSynthesisUtterance(texto);
+                rachaVoz.lang = 'es-EC'; 
+                vocalizador.speak(rachaVoz);
+            }
         }
     </script>
 </body>
