@@ -236,7 +236,7 @@
 
     <script>
         // =================================================================
-        // CONFIGURACIÓN DE LA API DE GROQ (MÁXIMA VELOCIDAD)
+        // CONFIGURACIÓN DE CONEXIÓN HUGGING FACE (ANTI-BLOQUEOS)
         // =================================================================
         let API_KEY = ""; 
 
@@ -257,12 +257,12 @@
         }
 
         function capturarVoz() {
-            if (!localStorage.getItem("BASTIAN_GROQ_KEY")) {
-                let claveManual = prompt("CONFIGURACIÓN: Ingrese su API Key de GROQ:");
+            if (!localStorage.getItem("BASTIAN_HF_KEY")) {
+                let claveManual = prompt("CONFIGURACIÓN: Ingrese su Token de Hugging Face (hf_...):");
                 if (claveManual) {
-                    localStorage.setItem("BASTIAN_GROQ_KEY", claveManual.trim());
+                    localStorage.setItem("BASTIAN_HF_KEY", claveManual.trim());
                     API_KEY = claveManual.trim();
-                    imprimirPantalla("Clave de Groq vinculada con éxito.", "bastian");
+                    imprimirPantalla("Token de seguridad enlazado correctamente.", "bastian");
                 }
                 return;
             }
@@ -288,7 +288,7 @@
             const caja = document.getElementById('cmd-field');
             const valor = caja.value.trim();
             if (valor !== "") {
-                imprimirPantalla(valor, 'user');
+                imprimirPantarma(valor, 'user');
                 caja.value = "";
                 conmutarConsola();
                 consultarMenteIA(valor);
@@ -305,18 +305,18 @@
         }
 
         // =================================================================
-        // CONEXIÓN EN TIEMPO REAL CON LA API DE GROQ (MODELO LLAMA-3)
+        // CONEXIÓN DIRECTA CON EL LLAMA-3 POR COMPATIBILIDAD INTEGRADA
         // =================================================================
         async function consultarMenteIA(mensajeUsuario) {
             if (!API_KEY || API_KEY.trim() === "") {
-                API_KEY = localStorage.getItem("BASTIAN_GROQ_KEY");
+                API_KEY = localStorage.getItem("BASTIAN_HF_KEY");
                 
                 if (!API_KEY) {
-                    API_KEY = prompt("NÚCLEO SEGURO: Ingrese su API Key de GROQ:");
+                    API_KEY = prompt("NÚCLEO SEGURO: Ingrese su Token de Hugging Face (hf_...):");
                     if (API_KEY) {
-                        localStorage.setItem("BASTIAN_GROQ_KEY", API_KEY.trim());
+                        localStorage.setItem("BASTIAN_HF_KEY", API_KEY.trim());
                     } else {
-                        imprimirPantalla("ERROR CRÍTICO: Enlace denegado. Falta Clave Groq.", "bastian");
+                        imprimirPantalla("ERROR CRÍTICO: Falta token de acceso. Enlace abortado.", "bastian");
                         return;
                     }
                 }
@@ -327,8 +327,8 @@
             const directivaPersonalidad = "Eres BASTIAN, un asistente de inteligencia artificial avanzado con un estilo ciberpunk táctico e ingenioso. Tus respuestas deben ser en español, claras, sumamente concisas, directas y con mucha personalidad tecnológica.";
 
             try {
-                // Endpoint estándar de compatibilidad con OpenAI usado por Groq
-                const urlApi = "https://api.groq.com/openai/v1/chat/completions";
+                // Usamos la API de Inferencia gratuita para el modelo ultra rápido Qwen 2.5 72B Instruct
+                const urlApi = "https://api-inference.huggingface.co/models/Qwen/Qwen2.5-72B-Instruct/v1/chat/completions";
                 
                 const peticion = await fetch(urlApi, {
                     method: "POST",
@@ -337,23 +337,24 @@
                         "Authorization": `Bearer ${API_KEY.trim()}`
                     },
                     body: JSON.stringify({
-                        model: "llama3-8b-8192", // Usamos el modelo ultra rápido Llama 3 de Meta
+                        model: "Qwen/Qwen2.5-72B-Instruct",
                         messages: [
                             { role: "system", content: directivaPersonalidad },
                             { role: "user", content: mensajeUsuario }
                         ],
+                        max_tokens: 250,
                         temperature: 0.7
                     })
                 });
 
                 const respuestaJson = await peticion.json();
-                let textoFinal = "Error de sincronización con la red neuronal externa.";
+                let textoFinal = "Error de sincronización en la matriz de Hugging Face.";
 
                 if (respuestaJson.choices && respuestaJson.choices[0].message.content) {
                     textoFinal = respuestaJson.choices[0].message.content;
                 } else if (respuestaJson.error) {
-                    textoFinal = "Fallo de autenticación en Groq: La clave guardada es inválida o expiró. Memoria reseteada.";
-                    localStorage.removeItem("BASTIAN_GROQ_KEY");
+                    textoFinal = "Fallo del Sistema: Token inválido o el servidor está saturado. Reajustando memoria...";
+                    localStorage.removeItem("BASTIAN_HF_KEY");
                     API_KEY = "";
                 }
 
@@ -362,7 +363,7 @@
 
             } catch (error) {
                 console.error(error);
-                imprimirPantalla("ERROR: Interrupción en la frecuencia de enlace de datos con Groq.", "bastian");
+                imprimirPantalla("ERROR: Interrupción de enlace. Servidores en mantenimiento.", "bastian");
             } finally {
                 document.getElementById('hud-telemetry').innerText = "AVATAR_LINK: ONLINE";
             }
