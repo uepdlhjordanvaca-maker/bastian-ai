@@ -236,7 +236,7 @@
 
     <script>
         // =================================================================
-        // CONFIGURACIÓN SEGURA (VACÍA POR PROTECCIÓN CONTRA ESCANEO)
+        // CONFIGURACIÓN DE LA API DE GROQ (MÁXIMA VELOCIDAD)
         // =================================================================
         let API_KEY = ""; 
 
@@ -257,13 +257,12 @@
         }
 
         function capturarVoz() {
-            // Si el usuario toca el círculo y no hay clave en memoria, le permite configurarla
-            if (!localStorage.getItem("BASTIAN_GEMINI_KEY")) {
-                let claveManual = prompt("CONFIGURACIÓN: Ingrese su nueva API Key de Gemini:");
+            if (!localStorage.getItem("BASTIAN_GROQ_KEY")) {
+                let claveManual = prompt("CONFIGURACIÓN: Ingrese su API Key de GROQ:");
                 if (claveManual) {
-                    localStorage.setItem("BASTIAN_GEMINI_KEY", claveManual);
-                    API_KEY = claveManual;
-                    imprimirPantalla("Clave guardada localmente de forma segura.", "bastian");
+                    localStorage.setItem("BASTIAN_GROQ_KEY", claveManual.trim());
+                    API_KEY = claveManual.trim();
+                    imprimirPantalla("Clave de Groq vinculada con éxito.", "bastian");
                 }
                 return;
             }
@@ -306,19 +305,18 @@
         }
 
         // =================================================================
-        // CONEXIÓN SEGURA EN TIEMPO REAL CON LA API DE GEMINI
+        // CONEXIÓN EN TIEMPO REAL CON LA API DE GROQ (MODELO LLAMA-3)
         // =================================================================
         async function consultarMenteIA(mensajeUsuario) {
-            // Recupera de forma oculta la clave guardada en el celular del usuario
             if (!API_KEY || API_KEY.trim() === "") {
-                API_KEY = localStorage.getItem("BASTIAN_GEMINI_KEY");
+                API_KEY = localStorage.getItem("BASTIAN_GROQ_KEY");
                 
                 if (!API_KEY) {
-                    API_KEY = prompt("NÚCLEO SEGURO: Ingrese su nueva API Key de Gemini:");
+                    API_KEY = prompt("NÚCLEO SEGURO: Ingrese su API Key de GROQ:");
                     if (API_KEY) {
-                        localStorage.setItem("BASTIAN_GEMINI_KEY", API_KEY);
+                        localStorage.setItem("BASTIAN_GROQ_KEY", API_KEY.trim());
                     } else {
-                        imprimirPantalla("ERROR CRÍTICO: Enlace denegado por falta de clave.", "bastian");
+                        imprimirPantalla("ERROR CRÍTICO: Enlace denegado. Falta Clave Groq.", "bastian");
                         return;
                     }
                 }
@@ -326,29 +324,36 @@
 
             document.getElementById('hud-telemetry').innerText = "CORE_PROCESSING...";
 
-            const directivaPersonalidad = "Eres BASTIAN, un asistente de inteligencia artificial avanzado con un estilo ciberpunk táctico e ingenioso. Tus respuestas deben ser claras, sumamente concisas, directas y con mucha personalidad tecnológica.";
+            const directivaPersonalidad = "Eres BASTIAN, un asistente de inteligencia artificial avanzado con un estilo ciberpunk táctico e ingenioso. Tus respuestas deben ser en español, claras, sumamente concisas, directas y con mucha personalidad tecnológica.";
 
             try {
-                const urlApi = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
+                // Endpoint estándar de compatibilidad con OpenAI usado por Groq
+                const urlApi = "https://api.groq.com/openai/v1/chat/completions";
                 
                 const peticion = await fetch(urlApi, {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
+                    headers: { 
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${API_KEY.trim()}`
+                    },
                     body: JSON.stringify({
-                        contents: [{
-                            parts: [{ text: `${directivaPersonalidad}\nUsuario: ${mensajeUsuario}` }]
-                        }]
+                        model: "llama3-8b-8192", // Usamos el modelo ultra rápido Llama 3 de Meta
+                        messages: [
+                            { role: "system", content: directivaPersonalidad },
+                            { role: "user", content: mensajeUsuario }
+                        ],
+                        temperature: 0.7
                     })
                 });
 
                 const respuestaJson = await peticion.json();
-                let textoFinal = "Error de sincronización con la red neuronal.";
+                let textoFinal = "Error de sincronización con la red neuronal externa.";
 
-                if (respuestaJson.candidates && respuestaJson.candidates[0].content.parts[0].text) {
-                    textoFinal = respuestaJson.candidates[0].content.parts[0].text;
+                if (respuestaJson.choices && respuestaJson.choices[0].message.content) {
+                    textoFinal = respuestaJson.choices[0].message.content;
                 } else if (respuestaJson.error) {
-                    textoFinal = "Fallo de autenticación: La clave local es inválida o fue revocada. Memoria reseteada; intente enviar otro mensaje para ingresar una clave nueva.";
-                    localStorage.removeItem("BASTIAN_GEMINI_KEY"); // Borra la clave vieja que no sirvió
+                    textoFinal = "Fallo de autenticación en Groq: La clave guardada es inválida o expiró. Memoria reseteada.";
+                    localStorage.removeItem("BASTIAN_GROQ_KEY");
                     API_KEY = "";
                 }
 
@@ -357,7 +362,7 @@
 
             } catch (error) {
                 console.error(error);
-                imprimirPantalla("ERROR: Interrupción en la frecuencia de enlace de datos.", "bastian");
+                imprimirPantalla("ERROR: Interrupción en la frecuencia de enlace de datos con Groq.", "bastian");
             } finally {
                 document.getElementById('hud-telemetry').innerText = "AVATAR_LINK: ONLINE";
             }
