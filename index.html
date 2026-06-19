@@ -32,37 +32,38 @@
         ==================================================================== */
         .avatar-container {
             position: relative;
-            width: 280px;
-            height: 280px;
+            width: 260px;
+            height: 260px;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: 10px;
+            margin-bottom: 5px;
             animation: levitarRobot 4s ease-in-out infinite;
         }
 
         /* Resplandor de energía de fondo */
         .energy-pulse {
             position: absolute;
-            width: 220px;
-            height: 220px;
+            width: 200px;
+            height: 200px;
             background: radial-gradient(circle, rgba(0,240,255,0.2) 0%, transparent 70%);
             border-radius: 50%;
             animation: pulso 2s infinite ease-in-out;
             z-index: 1;
         }
 
-        /* Imagen del Robot con máscara circular futurista */
+        /* Imagen enlazada localmente desde tu repositorio */
         .robot-display {
             position: relative;
-            width: 240px;
-            height: 240px;
+            width: 220px;
+            height: 220px;
             border-radius: 50%;
             border: 2px solid var(--cyber-cyan);
             box-shadow: 0 0 25px var(--glow-energy), inset 0 0 20px var(--cyber-blue);
-            background-image: url('https://png.pngtree.com/png-clipart/20231003/original/pngtree-blue-science-fiction-grid-iron-man-ai-jarvis-png-image_112370.png');
+            /* AQUÍ ESTÁ EL ENLACE LOCAL A TU REPOSITORIO */
+            background-image: url('robot.svg');
             background-size: cover;
-            background-position: center top;
+            background-position: center center;
             cursor: pointer;
             z-index: 5;
             overflow: hidden;
@@ -107,7 +108,7 @@
         .terminal-stream {
             width: 85%;
             max-width: 440px;
-            height: 100px;
+            height: 110px;
             margin-top: 15px;
             background: rgba(2, 6, 18, 0.55);
             border: 1px solid rgba(0, 240, 255, 0.15);
@@ -119,7 +120,7 @@
             gap: 6px;
             box-sizing: border-box;
             backdrop-filter: blur(6px);
-            margin-bottom: 75px;
+            margin-bottom: 70px;
         }
 
         .stream-line {
@@ -231,7 +232,6 @@
     <div class="avatar-container">
         <div class="energy-pulse"></div>
         <div class="outer-hud-grid"></div>
-        <!-- El nodo del robot utiliza la imagen exacta solicitada -->
         <div class="robot-display" id="robot-node" onclick="capturarVoz()"></div>
     </div>
 
