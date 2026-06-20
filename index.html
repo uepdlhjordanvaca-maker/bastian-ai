@@ -229,18 +229,18 @@
 
         window.addEventListener('DOMContentLoaded', () => {
             if (API_KEY) {
-                imprimirPantalla("Memoria de credenciales vinculada.", "bastian");
+                imprimirPantalla("Token de seguridad enlazado correctamente.", "bastian");
             } else {
-                imprimirPantalla("SISTEMA: Toque el holograma central para vincular su clave de acceso.", "bastian");
+                imprimirPantalla("SISTEMA: Requiere Token de Acceso. Presione el holograma central para ingresar su clave.", "bastian");
             }
         });
 
         function forzarSolicitudToken() {
-            let claveManual = prompt("NÚCLEO DE SEGURIDAD: Ingrese su clave de Hugging Face (hf_...):");
+            let claveManual = prompt("CONFIGURACIÓN NÚCLEO: Ingrese su Token de Hugging Face (hf_...):");
             if (claveManual && claveManual.trim() !== "") {
                 localStorage.setItem("BASTIAN_HF_KEY", claveManual.trim());
                 API_KEY = claveManual.trim();
-                imprimirPantalla("Credenciales guardadas localmente en el dispositivo.", "bastian");
+                imprimirPantalla("Token actualizado y enlazado correctamente.", "bastian");
             }
         }
 
@@ -262,6 +262,10 @@
             if (valor !== "") {
                 imprimirPantalla(valor, 'user');
                 caja.value = "";
+                
+                const wrapper = document.getElementById('input-container');
+                wrapper.classList.remove('active');
+                
                 consultarMenteIA(valor);
             }
         }
@@ -275,6 +279,9 @@
             vista.scrollTop = vista.scrollHeight;
         }
 
+        // =================================================================
+        // CONEXIÓN MODERNA POR COMPLETO (MESSAGES COMPLETIONS)
+        // =================================================================
         async function consultarMenteIA(mensajeUsuario) {
             API_KEY = localStorage.getItem("BASTIAN_HF_KEY");
 
@@ -285,30 +292,40 @@
 
             document.getElementById('hud-telemetry').innerText = "CORE_PROCESSING...";
 
+            const directivaPersonalidad = "Eres BASTIAN, un asistente de inteligencia artificial avanzado con un estilo ciberpunk táctico e ingenioso. Tus respuestas deben ser en español, claras, sumamente concisas, directas y con mucha personalidad tecnológica.";
+
             try {
-                // Endpoint directo estructurado para evitar bloqueos CSP del navegador público
-                const res = await fetch("https://api-inference.huggingface.co/models/meta-llama/Meta-Llama-3-8B-Instruct", {
+                // Endpoint compatible con el formato moderno v1/chat/completions
+                const urlApi = "https://api-inference.huggingface.co/models/meta-llama/Meta-Llama-3-8B-Instruct/v1/chat/completions";
+                
+                const peticion = await fetch(urlApi, {
                     method: "POST",
                     headers: { 
                         "Content-Type": "application/json",
-                        "Authorization": "Bearer " + API_KEY.replace(/\s/g, '')
+                        "Authorization": `Bearer ${API_KEY.replace(/\s/g, '')}`
                     },
                     body: JSON.stringify({
-                        inputs: `<|system|>\nEres BASTIAN, una inteligencia artificial avanzada con estilo ciberpunk táctico e ingenioso. Responde en español, muy corto, directo y conciso.\n<|user|>\n${mensajeUsuario}\n<|assistant|>\n`,
-                        parameters: { max_new_tokens: 150, temperature: 0.7 }
+                        model: "meta-llama/Meta-Llama-3-8B-Instruct",
+                        messages: [
+                            { role: "system", content: directivaPersonalidad },
+                            { role: "user", content: mensajeUsuario }
+                        ],
+                        max_tokens: 150,
+                        temperature: 0.7
                     })
                 });
 
-                const data = await res.json();
+                const respuestaJson = await peticion.json();
                 let textoFinal = "";
 
-                if (Array.isArray(data) && data[0].generated_text) {
-                    const completo = data[0].generated_text;
-                    textoFinal = completo.split("<|assistant|>\n")[1] || completo;
-                } else if (data.error) {
-                    textoFinal = "Fallo de validación: La clave es incorrecta o los servidores están ocupados. Toque el holograma para reintroducirla.";
+                if (respuestaJson.choices && respuestaJson.choices[0].message && respuestaJson.choices[0].message.content) {
+                    textoFinal = respuestaJson.choices[0].message.content;
+                } else if (respuestaJson.error) {
+                    textoFinal = "Fallo del Sistema: El token guardado es inválido. Toque el holograma central para volver a ingresarlo.";
+                    localStorage.removeItem("BASTIAN_HF_KEY");
+                    API_KEY = "";
                 } else {
-                    textoFinal = "Conexión establecida, pero la matriz devolvió un formato desconocido.";
+                    textoFinal = "Error inesperado en los paquetes de red enviados.";
                 }
 
                 imprimirPantalla(textoFinal.trim(), "bastian");
@@ -316,7 +333,7 @@
 
             } catch (error) {
                 console.error(error);
-                imprimirPantalla("Error de red local. Verifique que copió la clave completa sin espacios.", "bastian");
+                imprimirPantalla("ERROR: Interrupción de enlace. Servidores caídos o saturados.", "bastian");
             } finally {
                 document.getElementById('hud-telemetry').innerText = "AVATAR_LINK: ONLINE";
             }
